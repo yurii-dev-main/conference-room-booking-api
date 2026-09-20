@@ -50,4 +50,8 @@ Thumbs.db
 code_artifact.md
 scratch/
 *.tmp
+*.log
+*.sqlite
+*.sqlite3
+*.db
 
