@@ -1,9 +1,13 @@
 from src.schemas.room import RoomCreate, RoomResponse, RoomUpdate
-from src.schemas.service import ServiceResponse
+from src.schemas.search import AvailableRoomResponse, RoomSearchRequest
+from src.schemas.service import ServiceCreate, ServiceResponse
 
 __all__ = [
     "RoomCreate",
     "RoomUpdate",
     "RoomResponse",
+    "ServiceCreate",
     "ServiceResponse",
+    "RoomSearchRequest",
+    "AvailableRoomResponse",
 ]

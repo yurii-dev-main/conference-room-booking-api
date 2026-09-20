@@ -5,11 +5,41 @@ from fastapi import HTTPException, status
 from src.models import Room
 from src.repositories.room_repository import RoomRepository
 from src.schemas.room import RoomCreate, RoomUpdate
+from src.schemas.search import AvailableRoomResponse, RoomSearchRequest
+from src.schemas.service import ServiceResponse
+from src.services.pricing import PricingEngine
 
 
 class RoomService:
     def __init__(self, repo: RoomRepository) -> None:
         self.repo = repo
+
+    async def search_available_rooms(
+        self, request: RoomSearchRequest
+    ) -> list[AvailableRoomResponse]:
+        rooms = await self.repo.search_available(
+            request.start_time,
+            request.end_time,
+            request.min_capacity,
+        )
+        results = []
+        for room in rooms:
+            cost = PricingEngine.calculate_room_cost(
+                request.start_time,
+                request.end_time,
+                room.base_hourly_rate,
+            )
+            results.append(
+                AvailableRoomResponse(
+                    id=room.id,
+                    name=room.name,
+                    capacity=room.capacity,
+                    base_hourly_rate=room.base_hourly_rate,
+                    calculated_rental_cost=cost,
+                    services=[ServiceResponse.model_validate(s) for s in room.services],
+                )
+            )
+        return results
 
     async def get_room(self, room_id: int) -> Room:
         room = await self.repo.get_by_id(room_id)

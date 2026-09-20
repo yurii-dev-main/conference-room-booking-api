@@ -36,6 +36,34 @@ class RoomRepository:
         stmt = select(Service).where(Service.id.in_(service_ids))
         return (await self.session.execute(stmt)).scalars().all()
 
+    async def search_available(
+        self,
+        start_time: datetime,
+        end_time: datetime,
+        min_capacity: int,
+    ) -> Sequence[Room]:
+        conflicting_subquery = (
+            select(Booking.room_id)
+            .where(
+                Booking.status == BookingStatus.CONFIRMED,
+                Booking.start_time < end_time,
+                Booking.end_time > start_time,
+            )
+            .scalar_subquery()
+        )
+
+        stmt = (
+            select(Room)
+            .options(selectinload(Room.services))
+            .where(
+                Room.is_active.is_(True),
+                Room.capacity >= min_capacity,
+                Room.id.not_in(conflicting_subquery),
+            )
+            .order_by(Room.capacity.asc())
+        )
+        return (await self.session.execute(stmt)).scalars().all()
+
     async def has_active_future_bookings(
         self, room_id: int, current_time: datetime
     ) -> bool:

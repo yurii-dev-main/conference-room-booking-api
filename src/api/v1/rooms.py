@@ -4,6 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.core.database import get_db
 from src.repositories.room_repository import RoomRepository
 from src.schemas.room import RoomCreate, RoomResponse, RoomUpdate
+from src.schemas.search import AvailableRoomResponse, RoomSearchRequest
 from src.services.room_service import RoomService
 
 router = APIRouter(prefix="/rooms", tags=["Rooms"])
@@ -12,6 +13,18 @@ router = APIRouter(prefix="/rooms", tags=["Rooms"])
 def get_room_service(session: AsyncSession = Depends(get_db)) -> RoomService:
     repo = RoomRepository(session)
     return RoomService(repo)
+
+
+@router.post(
+    "/search",
+    response_model=list[AvailableRoomResponse],
+    status_code=status.HTTP_200_OK,
+)
+async def search_available_rooms(
+    request: RoomSearchRequest,
+    service: RoomService = Depends(get_room_service),
+) -> list[AvailableRoomResponse]:
+    return await service.search_available_rooms(request)
 
 
 @router.get("", response_model=list[RoomResponse], status_code=status.HTTP_200_OK)
