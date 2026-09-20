@@ -14,7 +14,13 @@ def get_service_service(session: AsyncSession = Depends(get_db)) -> ServiceServi
     return ServiceService(repo)
 
 
-@router.post("", response_model=ServiceResponse, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "",
+    response_model=ServiceResponse,
+    status_code=status.HTTP_201_CREATED,
+    summary="Create supplementary service",
+    description="Add supplementary equipment or service with fixed price to catalog.",
+)
 async def create_service(
     data: ServiceCreate,
     service: ServiceService = Depends(get_service_service),
@@ -23,7 +29,13 @@ async def create_service(
     return ServiceResponse.model_validate(item)
 
 
-@router.get("", response_model=list[ServiceResponse], status_code=status.HTTP_200_OK)
+@router.get(
+    "",
+    response_model=list[ServiceResponse],
+    status_code=status.HTTP_200_OK,
+    summary="List available services",
+    description="Retrieve all registered equipment and service options for booking.",
+)
 async def list_services(
     service: ServiceService = Depends(get_service_service),
 ) -> list[ServiceResponse]:

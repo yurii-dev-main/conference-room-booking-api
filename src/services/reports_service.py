@@ -177,19 +177,21 @@ class ReportsService:
 
         for b in bookings:
             for item in b.services_snapshot:
-                sid = item.get("id")
-                if sid in stats:
-                    stats[sid]["order_count"] += 1
-                    stats[sid]["total_revenue"] += Decimal(
-                        str(item.get("price", "0.00"))
-                    )
-                else:
-                    stats[sid] = {
-                        "service_id": sid,
-                        "service_name": item.get("name", "Unknown"),
-                        "order_count": 1,
-                        "total_revenue": Decimal(str(item.get("price", "0.00"))),
-                    }
+                raw_id = item.get("id")
+                if raw_id is not None:
+                    sid = int(raw_id)
+                    if sid in stats:
+                        stats[sid]["order_count"] += 1
+                        stats[sid]["total_revenue"] += Decimal(
+                            str(item.get("price", "0.00"))
+                        )
+                    else:
+                        stats[sid] = {
+                            "service_id": sid,
+                            "service_name": str(item.get("name", "Unknown")),
+                            "order_count": 1,
+                            "total_revenue": Decimal(str(item.get("price", "0.00"))),
+                        }
 
         sorted_items = sorted(
             stats.values(),

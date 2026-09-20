@@ -1,5 +1,6 @@
 import asyncio
 from decimal import Decimal
+from typing import Any
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -7,13 +8,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.core.database import async_session_factory
 from src.models import Room, RoomService, Service
 
-INITIAL_ROOMS = [
+INITIAL_ROOMS: list[dict[str, Any]] = [
     {"name": "Room A", "capacity": 50, "base_hourly_rate": Decimal("2000.00")},
     {"name": "Room B", "capacity": 100, "base_hourly_rate": Decimal("3500.00")},
     {"name": "Room C", "capacity": 30, "base_hourly_rate": Decimal("1500.00")},
 ]
 
-INITIAL_SERVICES = [
+INITIAL_SERVICES: list[dict[str, Any]] = [
     {"name": "Projector", "price": Decimal("500.00")},
     {"name": "Wi-Fi", "price": Decimal("300.00")},
     {"name": "Sound", "price": Decimal("700.00")},
@@ -23,25 +24,27 @@ INITIAL_SERVICES = [
 async def seed_data(session: AsyncSession) -> None:
     services_map: dict[str, Service] = {}
     for s_data in INITIAL_SERVICES:
-        stmt = select(Service).where(Service.name == s_data["name"])
+        service_name = str(s_data["name"])
+        stmt = select(Service).where(Service.name == service_name)
         existing = (await session.execute(stmt)).scalar_one_or_none()
         if not existing:
-            service = Service(name=s_data["name"], price=s_data["price"])
+            service = Service(name=service_name, price=Decimal(str(s_data["price"])))
             session.add(service)
             await session.flush()
-            services_map[s_data["name"]] = service
+            services_map[service_name] = service
         else:
-            services_map[s_data["name"]] = existing
+            services_map[service_name] = existing
 
     rooms_list: list[Room] = []
     for r_data in INITIAL_ROOMS:
-        stmt = select(Room).where(Room.name == r_data["name"])
-        existing_room = (await session.execute(stmt)).scalar_one_or_none()
+        room_name = str(r_data["name"])
+        room_stmt = select(Room).where(Room.name == room_name)
+        existing_room = (await session.execute(room_stmt)).scalar_one_or_none()
         if not existing_room:
             room = Room(
-                name=r_data["name"],
-                capacity=r_data["capacity"],
-                base_hourly_rate=r_data["base_hourly_rate"],
+                name=room_name,
+                capacity=int(r_data["capacity"]),
+                base_hourly_rate=Decimal(str(r_data["base_hourly_rate"])),
                 is_active=True,
             )
             session.add(room)

@@ -19,6 +19,12 @@ def get_room_service(session: AsyncSession = Depends(get_db)) -> RoomService:
     "/search",
     response_model=list[AvailableRoomResponse],
     status_code=status.HTTP_200_OK,
+    summary="Search available conference rooms",
+    description=(
+        "Find active rooms satisfying capacity requirements without overlapping "
+        "confirmed bookings, returning calculated rental cost according to dynamic "
+        "tariffs."
+    ),
 )
 async def search_available_rooms(
     request: RoomSearchRequest,
@@ -27,7 +33,13 @@ async def search_available_rooms(
     return await service.search_available_rooms(request)
 
 
-@router.get("", response_model=list[RoomResponse], status_code=status.HTTP_200_OK)
+@router.get(
+    "",
+    response_model=list[RoomResponse],
+    status_code=status.HTTP_200_OK,
+    summary="List all active conference rooms",
+    description="Retrieve all active conference rooms with associated services.",
+)
 async def list_rooms(
     service: RoomService = Depends(get_room_service),
 ) -> list[RoomResponse]:
@@ -35,7 +47,13 @@ async def list_rooms(
     return [RoomResponse.model_validate(r) for r in rooms]
 
 
-@router.get("/{room_id}", response_model=RoomResponse, status_code=status.HTTP_200_OK)
+@router.get(
+    "/{room_id}",
+    response_model=RoomResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Get conference room details",
+    description="Retrieve configuration and services for a specific conference room.",
+)
 async def get_room(
     room_id: int,
     service: RoomService = Depends(get_room_service),
@@ -44,7 +62,15 @@ async def get_room(
     return RoomResponse.model_validate(room)
 
 
-@router.post("", response_model=RoomResponse, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "",
+    response_model=RoomResponse,
+    status_code=status.HTTP_201_CREATED,
+    summary="Create a new conference room",
+    description=(
+        "Register a new room with capacity, base rate, and linked service options."
+    ),
+)
 async def create_room(
     data: RoomCreate,
     service: RoomService = Depends(get_room_service),
@@ -53,7 +79,13 @@ async def create_room(
     return RoomResponse.model_validate(room)
 
 
-@router.patch("/{room_id}", response_model=RoomResponse, status_code=status.HTTP_200_OK)
+@router.patch(
+    "/{room_id}",
+    response_model=RoomResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Update conference room details",
+    description="Modify room properties, capacity, base rate, or attached services.",
+)
 async def update_room(
     room_id: int,
     data: RoomUpdate,
@@ -63,7 +95,14 @@ async def update_room(
     return RoomResponse.model_validate(room)
 
 
-@router.delete("/{room_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete(
+    "/{room_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Soft delete a conference room",
+    description=(
+        "Deactivate a conference room. Fails if active future bookings exist."
+    ),
+)
 async def delete_room(
     room_id: int,
     service: RoomService = Depends(get_room_service),

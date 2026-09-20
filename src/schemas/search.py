@@ -7,9 +7,22 @@ from src.schemas.service import ServiceResponse
 
 
 class RoomSearchRequest(BaseModel):
-    start_time: datetime
-    end_time: datetime
-    min_capacity: int = Field(default=1, gt=0)
+    start_time: datetime = Field(
+        ...,
+        description="Search interval start time in ISO 8601 UTC format",
+        examples=["2026-10-01T10:00:00Z"],
+    )
+    end_time: datetime = Field(
+        ...,
+        description="Search interval end time in ISO 8601 UTC format",
+        examples=["2026-10-01T12:00:00Z"],
+    )
+    min_capacity: int = Field(
+        default=1,
+        gt=0,
+        description="Minimum room capacity filter",
+        examples=[20],
+    )
 
     @model_validator(mode="after")
     def validate_interval(self) -> "RoomSearchRequest":
@@ -19,11 +32,24 @@ class RoomSearchRequest(BaseModel):
 
 
 class AvailableRoomResponse(BaseModel):
-    id: int
-    name: str
-    capacity: int
-    base_hourly_rate: Decimal
-    calculated_rental_cost: Decimal
-    services: list[ServiceResponse] = Field(default_factory=list)
+    id: int = Field(..., description="Unique room identifier", examples=[1])
+    name: str = Field(..., description="Room name", examples=["Emerald Hall"])
+    capacity: int = Field(..., description="Room capacity", examples=[50])
+    base_hourly_rate: Decimal = Field(
+        ...,
+        description="Base rate per hour",
+        examples=[Decimal("2000.00")],
+    )
+    calculated_rental_cost: Decimal = Field(
+        ...,
+        description=(
+            "Calculated rental cost according to dynamic tariff window multipliers"
+        ),
+        examples=[Decimal("4000.00")],
+    )
+    services: list[ServiceResponse] = Field(
+        default_factory=list,
+        description="Services available in this room",
+    )
 
     model_config = ConfigDict(from_attributes=True)

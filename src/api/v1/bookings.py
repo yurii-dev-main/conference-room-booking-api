@@ -14,7 +14,17 @@ def get_booking_service(session: AsyncSession = Depends(get_db)) -> BookingServi
     return BookingService(repo)
 
 
-@router.post("", response_model=BookingResponse, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "",
+    response_model=BookingResponse,
+    status_code=status.HTTP_201_CREATED,
+    summary="Create a conference room booking",
+    description=(
+        "Reserve a conference room for a specific time window. "
+        "Utilizes row-level locking to prevent double-booking race "
+        "conditions and captures a historical snapshot of service prices."
+    ),
+)
 async def create_booking(
     data: BookingCreate,
     service: BookingService = Depends(get_booking_service),

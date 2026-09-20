@@ -1,5 +1,6 @@
 import asyncio
 from collections import defaultdict
+from decimal import Decimal
 
 from fastapi import HTTPException, status
 
@@ -90,7 +91,11 @@ class BookingService:
                 if hasattr(booking.status, "value")
                 else str(booking.status),
                 services_snapshot=[
-                    ServiceSnapshotItem(id=s["id"], name=s["name"], price=s["price"])
+                    ServiceSnapshotItem(
+                        id=int(str(s["id"])),
+                        name=str(s["name"]),
+                        price=Decimal(str(s["price"])),
+                    )
                     for s in snapshot
                 ],
             )
