@@ -58,4 +58,4 @@ jobs:
         run: alembic upgrade head
 
       - name: Run test suite
-        run: pytest tests/test_health.py tests/test_seed.py
+        run: pytest tests/test_health.py tests/test_seed.py tests/test_rooms.py
